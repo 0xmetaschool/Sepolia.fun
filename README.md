@@ -1,70 +1,91 @@
-# Getting Started with Create React App
+# Sepolia.fun
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Sepolia.fun is an advanced Web3 template for creating and deploying meme token systems. It utilizes bonding curve mechanics for price discovery and integrates automated Uniswap liquidity, enabling developers to establish sustainable token ecosystems with ease.
 
-## Available Scripts
+## Live Demo
 
-In the project directory, you can run:
 
-### `npm start`
+## Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Automated Price Discovery:** Bonding curve mechanism ensures fair and dynamic token pricing.
+- **Uniswap Integration:** Automatically creates and locks liquidity pools upon reaching funding targets.
+- **Real-Time Tracking:** Monitor funding progress and token distribution.
+- **Sustainable Token Economics:** Implements bonding curve mathematics and automated liquidity locking.
+- **User Analytics Dashboard:** Provides insights into token holders and transaction history.
+- **Secure Smart Contracts:** Built with OpenZeppelin standards and Solidity.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Technologies Used
 
-### `npm test`
+- **Frontend:** React.js
+- **Blockchain Integration:** Ethers.js
+- **AMM Integration:** Uniswap V2
+- **Smart Contracts:** Solidity, OpenZeppelin
+- **Mathematics:** Bonding Curve for Automated Market Making (AMM)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Use Cases
 
-### `npm run build`
+- **Automated Liquidity:** Establish liquidity pools for trading without manual intervention.
+- **Decentralized Price Discovery:** Enable price adjustments based on token supply and demand.
+- **Sustainable Economies:** Build ecosystems with locked liquidity and capped token supply.
+- **Community-Driven Tokens:** Launch tokens with fair distribution mechanisms.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Installation Steps
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/0xmetaschool/Sepolia.fun.git
+    ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+2. Navigate to the project directory:
+    ```bash
+    cd Sepolia.fun
+    ```
 
-### `npm run eject`
+3. Install dependencies:
+    ```bash
+    npm i --y
+    ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+4. Set up environment variables:
+    Create a `.env.local` file in the root directory and add the following variables:
+    ```env
+    REACT_APP_CONTRACT_ADDRESS=
+    REACT_APP_RPC_URL=
+    REACT_APP_X_API_KEY=
+    ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+5. Start the development server:
+    ```bash
+    npm start
+    ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+6. Open your browser and navigate to `http://localhost:3000`.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## How to Use
 
-## Learn More
+1. **Connect Web3 Wallet:** Use MetaMask to connect your wallet to the platform.
+2. **Create Token:** Initiate token creation with a minimal fee of 0.0001 ETH.
+3. **Distribute Initial Supply:** Release 200k tokens as the initial supply.
+4. **Bonding Curve Purchases:** Tokens are bought through the bonding curve mechanism.
+5. **Monitor Funding Progress:** Track the funding progress until the 24 ETH target is reached.
+6. **Uniswap Pool Creation:** At 24 ETH, the platform automatically creates and locks a Uniswap liquidity pool.
+7. **Trade on Uniswap:** Begin trading tokens directly on Uniswap.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Contributing
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+To contribute to this project:
 
-### Code Splitting
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## License
 
-### Analyzing the Bundle Size
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Contact
 
-### Making a Progressive Web App
+For any questions or support, open an issue in the [GitHub repository](https://github.com/0xmetaschool/Sepolia.fun/issues).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
