@@ -6,7 +6,7 @@ const Footer = () => {
   useEffect(() => {
     const fetchStarCount = async () => {
       try {
-        const response = await fetch('https://api.github.com/repos/0xmetaschool/token-ZK-Aadhaar');
+        const response = await fetch('https://api.github.com/repos/0xmetaschool/Sepolia.fun');
         const data = await response.json();
         setStarCount(data.stargazers_count);
       } catch (error) {
@@ -31,7 +31,7 @@ const Footer = () => {
             </div>
             <div className="flex items-center gap-4">
               <a
-                href="https://github.com/0xmetaschool/ZK-Aadhaar/fork"
+                href="https://github.com/0xmetaschool/Sepolia.fun/fork"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-white text-black px-4 py-2 rounded-md hover:bg-gray-200 transition-colors text-xs"
