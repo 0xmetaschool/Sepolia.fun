@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { ethers } from 'ethers';
-import '../App.css'; 
-import { abi } from './abi'; 
+import '../App.css';
+import { abi } from './abi';
 import { tokenAbi } from './tokenAbi';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
+import Footer from './Footer';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -22,7 +23,7 @@ const TokenDetail = () => {
   const [purchaseAmount, setPurchaseAmount] = useState('');
   const [cost, setCost] = useState('0');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const tokenDetails = card || {
     name: 'Unknown',
@@ -34,10 +35,8 @@ const TokenDetail = () => {
   };
 
   const fundingRaised = parseFloat(tokenDetails.fundingRaised.replace(' ETH', ''));
-
-  // Constants
-  const fundingGoal = 24; 
-  const maxSupply = parseInt(800000); 
+  const fundingGoal = 24;
+  const maxSupply = 800000;
 
   const [chartData, setChartData] = useState({
     labels: [],
@@ -64,7 +63,6 @@ const TokenDetail = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-       
         const ownersResponse = await fetch(
           `https://deep-index.moralis.io/api/v2.2/erc20/${tokenAddress}/owners?chain=sepolia&order=DESC`,
           {
@@ -77,7 +75,6 @@ const TokenDetail = () => {
         const ownersData = await ownersResponse.json();
         setOwners(ownersData.result || []);
 
-       
         const transfersResponse = await fetch(
           `https://deep-index.moralis.io/api/v2.2/erc20/${tokenAddress}/transfers?chain=sepolia&order=DESC`,
           {
@@ -90,14 +87,12 @@ const TokenDetail = () => {
         const transfersData = await transfersResponse.json();
         setTransfers(transfersData.result || []);
 
-        // Fetch total supply
         const provider = new ethers.JsonRpcProvider(process.env.REACT_APP_RPC_URL);
         const contract = new ethers.Contract(tokenAddress, tokenAbi, provider);
         const totalSupplyResponse = await contract.totalSupply();
-        var totalSupplyFormatted = parseInt(ethers.formatUnits(totalSupplyResponse, 'ether')) - 200000;
-        setTotalSupply(parseInt(totalSupplyFormatted));
-
-        // Calculate remaining tokens
+        const totalSupplyFormatted = parseInt(ethers.formatUnits(totalSupplyResponse, 'ether')) - 200000;
+        
+        setTotalSupply(totalSupplyFormatted);
         setRemainingTokens(maxSupply - totalSupplyFormatted);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -115,20 +110,8 @@ const TokenDetail = () => {
         labels: owners.map(owner => `${owner.owner_address.slice(0, 6)}...${owner.owner_address.slice(-4)}`),
         datasets: [{
           data: owners.map(owner => parseFloat(owner.percentage_relative_to_total_supply)),
-          backgroundColor: [
-            'rgba(130, 94, 255, 0.8)',
-            'rgba(255, 99, 132, 0.8)',
-            'rgba(54, 162, 235, 0.8)',
-            'rgba(255, 206, 86, 0.8)',
-            'rgba(75, 192, 192, 0.8)',
-          ],
-          borderColor: [
-            'rgba(130, 94, 255, 1)',
-            'rgba(255, 99, 132, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-          ],
+          backgroundColor: chartData.datasets[0].backgroundColor,
+          borderColor: chartData.datasets[0].borderColor,
           borderWidth: 1,
         }]
       });
@@ -142,16 +125,12 @@ const TokenDetail = () => {
         position: 'right',
         labels: {
           color: 'rgb(255, 255, 255)',
-          font: {
-            size: 12
-          }
+          font: { size: 12 }
         }
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
-            return `${context.label}: ${context.parsed.toFixed(2)}%`;
-          }
+          label: (context) => `${context.label}: ${context.parsed.toFixed(2)}%`
         }
       }
     },
@@ -163,294 +142,271 @@ const TokenDetail = () => {
     }
   };
 
-  // Calculate percentages for progress bars
   const fundingRaisedPercentage = (fundingRaised / fundingGoal) * 100;
-  const totalSupplyPercentage =
-    ((parseFloat(totalSupply) - 200000) / ethers.formatUnits(maxSupply - 200000, 'ether')) * 100;
+  const totalSupplyPercentage = ((totalSupply - 200000) / (maxSupply - 200000)) * 100;
 
-  // Function to get cost of purchasing tokens
   const getCost = async () => {
     if (!purchaseAmount) return;
 
     try {
       const provider = new ethers.JsonRpcProvider(process.env.REACT_APP_RPC_URL);
       const contract = new ethers.Contract(process.env.REACT_APP_CONTRACT_ADDRESS, abi, provider);
-      const costInWei = await contract.calculateCost(totalSupply, purchaseAmount); // Replace with actual function
+      const costInWei = await contract.calculateCost(totalSupply, purchaseAmount);
       setCost(ethers.formatUnits(costInWei, 'ether'));
-      setIsModalOpen(true); // Open the modal
+      setIsModalOpen(true);
     } catch (error) {
       console.error('Error calculating cost:', error);
     }
   };
 
-  // Function to handle purchase
   const handlePurchase = async () => {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
-      console.log(signer)
       const contract = new ethers.Contract(process.env.REACT_APP_CONTRACT_ADDRESS, abi, signer);
 
-      const transaction = await contract.buyMemeToken(tokenAddress, purchaseAmount,{
+      const transaction = await contract.buyMemeToken(tokenAddress, purchaseAmount, {
         value: ethers.parseUnits(cost, 'ether'),
-      }); 
+      });
       const receipt = await transaction.wait();
 
       alert(`Transaction successful! Hash: ${receipt.hash}`);
-      setIsModalOpen(false); 
+      setIsModalOpen(false);
     } catch (error) {
       console.error('Error during purchase:', error);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white py-4">
-      <div className="px-6">
+    <div className="min-h-screen bg-gradient-to-b from-yellow-300 to-yellow-400 text-gray-800 overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full bg-[repeating-linear-gradient(45deg,#FFD700,#FFD700_10px,#FFA500_10px,#FFA500_20px)] opacity-20" />
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute animate-float text-4xl"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+              transform: `rotate(${Math.random() * 360}deg)`
+            }}
+          >
+            {['🚀', '💎', '🌕', '🦍', '🎮'][Math.floor(Math.random() * 5)]}
+          </div>
+        ))}
+      </div>
+
+      <div className="px-6 pt-6">
         <button
           onClick={() => navigate(-1)}
-          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg font-semibold transition-all"
+          className="px-6 py-3 bg-orange-400 text-white rounded-full font-bold hover:bg-orange-500 transform hover:scale-110 hover:rotate-2 transition-all shadow-lg"
         >
-          ← Back
+          ← Back to Memes
         </button>
       </div>
-      <div className="text-center mb-6">
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-           Token Details
-          </h1>
-        </div>
+
+      <div className="text-center mb-12 pt-8">
+        <h1 className="text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-orange-500 animate-pulse">
+          Token Details
+        </h1>
+      </div>
+
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column */}
-          <div className="bg-gray-800 rounded-xl p-5 shadow-xl border border-gray-700" data-aos="fade-right">
-            <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600 mb-4">
+          <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border-4 border-orange-400 transform hover:rotate-1 transition-all">
+            <h2 className="text-4xl font-bold text-purple-600 mb-6">
               {tokenDetails.name}
+              <span className="text-orange-500 ml-4">${tokenDetails.symbol}</span>
             </h2>
             
             {tokenDetails.tokenImageUrl && (
-              <div className="mb-4 rounded-xl overflow-hidden bg-gray-900 p-2">
+              <div className="mb-6 rounded-3xl overflow-hidden bg-white p-4 shadow-inner">
                 <img 
                   src={tokenDetails.tokenImageUrl} 
                   alt={tokenDetails.name} 
-                  className="w-full max-w-[200px] h-[200px] object-contain mx-auto rounded-lg"
+                  className="w-full h-64 object-contain mx-auto transform hover:scale-105 transition-transform"
                 />
               </div>
             )}
 
-            <div className="space-y-3 text-gray-300">
-              <div className="bg-gray-900 rounded-lg p-3">
-                <p className="mb-1"><span className="text-purple-400 font-semibold">Creator Address:</span></p>
-                <p className="font-mono text-sm break-all">{tokenDetails.creatorAddress}</p>
+            <div className="space-y-4">
+              <div className="bg-orange-100 rounded-xl p-4">
+                <p className="text-sm font-bold text-purple-600 mb-2">Creator Address:</p>
+                <p className="font-mono text-base break-all bg-white/50 p-2 rounded-lg">
+                  {tokenDetails.creatorAddress}
+                </p>
               </div>
 
-              <div className="bg-gray-900 rounded-lg p-3">
-                <p className="mb-1"><span className="text-purple-400 font-semibold">Token Address:</span></p>
-                <p className="font-mono text-sm break-all">{tokenAddress}</p>
+              <div className="bg-orange-100 rounded-xl p-4">
+                <p className="text-sm font-bold text-purple-600 mb-2">Token Address:</p>
+                <p className="font-mono text-base break-all bg-white/50 p-2 rounded-lg">
+                  {tokenAddress}
+                </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gray-900 rounded-lg p-3">
-                  <p className="text-purple-400 font-semibold mb-1">Funding Raised</p>
-                  <p className="text-xl font-bold">{tokenDetails.fundingRaised}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-purple-600 text-white rounded-xl p-4 text-center">
+                  <p className="text-sm font-bold mb-2">Funding Raised</p>
+                  <p className="text-2xl font-black">{tokenDetails.fundingRaised}</p>
                 </div>
-
-                <div className="bg-gray-900 rounded-lg p-3">
-                  <p className="text-purple-400 font-semibold mb-1">Token Symbol</p>
-                  <p className="text-xl font-bold">{tokenDetails.symbol}</p>
+                <div className="bg-orange-500 text-white rounded-xl p-4 text-center">
+                  <p className="text-sm font-bold mb-2">Total Supply</p>
+                  <p className="text-2xl font-black">{remainingTokens} / 800K</p>
                 </div>
               </div>
 
-              <div className="bg-gray-900 rounded-lg p-3">
-                <p className="text-purple-400 font-semibold mb-1">Description</p>
-                <p className="text-sm">{tokenDetails.description}</p>
+              <div className="bg-white rounded-xl p-4 shadow-inner">
+                <p className="text-sm font-bold text-purple-600 mb-2">Description</p>
+                <p className="text-base text-gray-700 italic">{tokenDetails.description}</p>
               </div>
             </div>
           </div>
 
           {/* Right Column */}
-          <div className="space-y-6" data-aos="fade-left">
-            {/* Progress Bars */}
-            <div className="bg-gray-800 rounded-xl p-6 shadow-xl border border-gray-700">
+          <div className="space-y-8">
+            {/* Progress Section */}
+            <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border-4 border-purple-500 transform hover:-rotate-1 transition-all">
+              <h3 className="text-3xl font-bold text-orange-500 mb-6">Moon Progress 🌕</h3>
               <div className="space-y-6">
                 <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-purple-400 font-semibold">Bonding Curve Progress</span>
-                    <span className="text-gray-300">{fundingRaised} / {fundingGoal} ETH</span>
+                  <div className="flex justify-between mb-3">
+                    <span className="font-bold text-purple-600">Bonding Curve Progress</span>
+                    <span className="font-bold text-orange-500">{fundingRaised} / {fundingGoal} ETH</span>
                   </div>
-                  <div className="h-4 bg-gray-900 rounded-full overflow-hidden">
+                  <div className="h-4 bg-orange-100 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-purple-500 to-orange-500 transition-all duration-500"
                       style={{ width: `${fundingRaisedPercentage}%` }}
-                    ></div>
+                    />
                   </div>
-                  <p className="mt-2 text-sm text-gray-400">
-                    When the market cap reaches {fundingGoal} ETH, all the liquidity from the bonding curve will be deposited into 🦄 Uniswap, and the LP tokens will be burned.
+                  <p className="mt-3 text-sm text-gray-600">
+                    When we reach {fundingGoal} ETH, liquidity rockets to 🦄 Uniswap and LP tokens get burned! 🔥
                   </p>
                 </div>
 
                 <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-purple-400 font-semibold">Remaining Tokens</span>
-                    <span className="text-gray-300">{remainingTokens} / 800,000</span>
+                  <div className="flex justify-between mb-3">
+                    <span className="font-bold text-purple-600">Remaining Tokens</span>
+                    <span className="font-bold text-orange-500">{remainingTokens} / 800K</span>
                   </div>
-                  <div className="h-4 bg-gray-900 rounded-full overflow-hidden">
+                  <div className="h-4 bg-orange-100 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-purple-500 to-orange-500 transition-all duration-500"
                       style={{ width: `${totalSupplyPercentage}%` }}
-                    ></div>
+                    />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Buy Tokens Section */}
-            <div className="bg-gray-800 rounded-xl p-6 shadow-xl border border-gray-700">
-              <h3 className="text-xl font-bold text-purple-400 mb-4">Buy Tokens</h3>
-              <div className="space-y-4">
+            {/* Buy Section */}
+            <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border-4 border-orange-400 transform hover:rotate-1 transition-all">
+              <h3 className="text-3xl font-bold text-purple-600 mb-6">Buy Tokens 🚀</h3>
+              <div className="space-y-6">
                 <input
                   type="number"
-                  placeholder="Enter amount of tokens to buy"
+                  placeholder="Amount of tokens to moon with..."
                   value={purchaseAmount}
                   onChange={(e) => setPurchaseAmount(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-300"
+                  className="w-full px-6 py-4 text-lg rounded-2xl bg-white border-4 border-purple-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-200 placeholder-gray-400 transition-all"
                 />
                 <button 
                   onClick={getCost}
-                  className="w-full py-3 rounded-lg font-semibold bg-purple-600 hover:bg-purple-700 transform hover:scale-105 transition-all duration-300"
+                  className="w-full py-4 text-xl font-black bg-gradient-to-r from-purple-600 to-orange-500 text-white rounded-2xl hover:scale-105 hover:shadow-xl transition-all"
                 >
-                  Purchase
+                  Calculate Moon Cost 🚀
                 </button>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Owners Section */}
-        <div className="mt-8 bg-gray-800 rounded-xl p-6 shadow-xl border border-gray-700" data-aos="fade-up">
-          <h3 className="text-xl font-bold text-purple-400 mb-6">Token Owners</h3>
-          
-          {/* Add Pie Chart with Enhanced Details */}
-          <div className="mb-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left side - Pie Chart */}
-              <div className="bg-gray-900 rounded-xl p-4">
-                <h4 className="text-lg font-semibold text-purple-400 mb-4">Ownership Distribution</h4>
-                <div className="h-[400px] flex items-center justify-center">
-                  {!loading && owners.length > 0 && (
-                    <Pie data={chartData} options={chartOptions} />
-                  )}
-                </div>
-                <div className="mt-4 text-center">
-                  <p className="text-sm text-gray-400">Total Holders: {owners.length}</p>
-                  <p className="text-sm text-gray-400">Total Supply: {tokenDetails.totalSupply} Tokens</p>
-                </div>
-              </div>
-
-              {/* Right side - Top Holders List */}
-              <div className="bg-gray-900 rounded-xl p-4">
-                <h4 className="text-lg font-semibold text-purple-400 mb-4">Top 10 Token Holders</h4>
-                <div className="overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full">
-                      <thead>
-                        <tr className="border-b border-gray-700">
-                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-300">Rank</th>
-                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-300">Address</th>
-                         
-                          <th className="px-4 py-2 text-right text-sm font-semibold text-gray-300">Percentage</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-700">
-                        {owners.slice(0, 10).map((owner, index) => (
-                          <tr key={index} className="hover:bg-gray-800/50 transition-colors">
-                            <td className="px-4 py-2 text-sm text-gray-400">#{index + 1}</td>
-                            <td className="px-4 py-2 text-sm">
-                              <a 
-                                href={`https://sepolia.etherscan.io/address/${owner.owner_address}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-purple-400 hover:text-purple-300 font-mono"
-                              >
-                                {owner.owner_address.slice(0, 6)}...{owner.owner_address.slice(-4)}
-                              </a>
-                            </td>
-                            <td className="px-4 py-2 text-right text-sm text-gray-300">
-                              {parseFloat(owner.percentage_relative_to_total_supply).toFixed(2)}%
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                <div className="mt-4 p-3 bg-gray-800/50 rounded-lg">
-                  <div className="text-sm text-gray-400">
-                    <div className="flex justify-between mb-2">
-                      <span>Total Unique Holders:</span>
-                      <span className="text-purple-400 font-semibold">{owners.length}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Top 10 Holders Control:</span>
-                      <span className="text-purple-400 font-semibold">
-                        {owners.slice(0, 10).reduce((acc, owner) => 
-                          acc + parseFloat(owner.percentage_relative_to_total_supply), 0
-                        ).toFixed(2)}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Original Owners Table */}
-          {/* {loading ? (
-            <div className="flex justify-center items-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-900">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-300">Owner Address</th>
-                    <th className="px-4 py-3 text-right text-sm font-semibold text-gray-300">Percentage of Total Supply</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-700">
-                  {owners.map((owner, index) => (
-                    <tr key={index} className="hover:bg-gray-700/50 transition-colors">
-                      <td className="px-4 py-3 font-mono text-sm text-gray-300">{owner.owner_address}</td>
-                      <td className="px-4 py-3 text-right text-gray-300">{owner.percentage_relative_to_total_supply}%</td>
+            {/* Top Astronauts */}
+            <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border-4 border-purple-500 transform hover:-rotate-1 transition-all">
+              <h3 className="text-3xl font-bold text-orange-500 mb-6">Top Astronauts 👩🚀</h3>
+              <div className="overflow-x-auto max-h-96">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-orange-200">
+                      <th className="pb-3 text-left text-purple-600">Rank</th>
+                      <th className="pb-3 text-left text-purple-600">Address</th>
+                      <th className="pb-3 text-right text-purple-600">Share</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {owners.slice(0, 10).map((owner, index) => (
+                      <tr key={index} className="hover:bg-orange-50">
+                        <td className="py-3 font-bold text-orange-500">#{index + 1}</td>
+                        <td className="py-3 font-mono">
+                          <a
+                            href={`https://sepolia.etherscan.io/address/${owner.owner_address}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-600 hover:text-orange-500 transition-colors"
+                          >
+                            {owner.owner_address.slice(0, 6)}...{owner.owner_address.slice(-4)}
+                          </a>
+                        </td>
+                        <td className="py-3 text-right font-bold text-purple-600">
+                          {parseFloat(owner.percentage_relative_to_total_supply).toFixed(2)}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-6 p-4 bg-purple-100 rounded-xl">
+                <div className="flex justify-between text-purple-700 font-bold">
+                  <span>Total Holders:</span>
+                  <span>{owners.length}</span>
+                </div>
+                <div className="flex justify-between text-purple-700 font-bold">
+                  <span>Top 10 Control:</span>
+                  <span>
+                    {owners.slice(0, 10).reduce((acc, owner) => 
+                      acc + parseFloat(owner.percentage_relative_to_total_supply), 0
+                    ).toFixed(2)}%
+                  </span>
+                </div>
+              </div>
             </div>
-          )} */}
+          </div>
         </div>
+
 
         {/* Transfers Section */}
-        <div className="mt-8 bg-gray-800 rounded-xl p-6 shadow-xl border border-gray-700" data-aos="fade-up">
-          <h3 className="text-xl font-bold text-purple-400 mb-6">Token Transfers</h3>
+        <div className="mt-12 bg-white/80 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border-4 border-orange-400 transform hover:rotate-1 transition-all">
+          <h3 className="text-4xl font-bold text-purple-600 mb-8">Token Transfers 📤</h3>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-900">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-300">From Address</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-300">To Address</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-300">Value (ETH)</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-300">Transaction Hash</th>
+              <thead>
+                <tr className="border-b-2 border-purple-200">
+                  <th className="pb-3 text-left text-purple-600">From</th>
+                  <th className="pb-3 text-left text-purple-600">To</th>
+                  <th className="pb-3 text-right text-purple-600">Value</th>
+                  <th className="pb-3 text-right text-purple-600">TX Hash</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-700">
+              <tbody>
                 {transfers.map((transfer, index) => (
-                  <tr key={index} className="hover:bg-gray-700/50 transition-colors">
-                    <td className="px-4 py-3 font-mono text-sm text-gray-300">{transfer.from_address.slice(0, 8)}...{transfer.from_address.slice(-6)}</td>
-                    <td className="px-4 py-3 font-mono text-sm text-gray-300">{transfer.to_address.slice(0, 8)}...{transfer.to_address.slice(-6)}</td>
-                    <td className="px-4 py-3 text-right text-gray-300">{ethers.formatUnits(transfer.value, 'ether')}</td>
-                    <td className="px-4 py-3 font-mono text-sm text-right text-purple-400">
-                      <a href={`https://sepolia.etherscan.io/tx/${transfer.transaction_hash}`} target="_blank" rel="noopener noreferrer" className="hover:text-purple-300">
-                        {transfer.transaction_hash.slice(0, 8)}...{transfer.transaction_hash.slice(-6)}
+                  <tr key={index} className="hover:bg-orange-50">
+                    <td className="py-3 font-mono text-purple-600">
+                      {transfer.from_address.slice(0, 6)}...{transfer.from_address.slice(-4)}
+                    </td>
+                    <td className="py-3 font-mono text-purple-600">
+                      {transfer.to_address.slice(0, 6)}...{transfer.to_address.slice(-4)}
+                    </td>
+                    <td className="py-3 text-right font-bold text-orange-500">
+                      {ethers.formatUnits(transfer.value, 'ether')}
+                    </td>
+                    <td className="py-3 font-mono text-right">
+                      <a
+                        href={`https://sepolia.etherscan.io/tx/${transfer.transaction_hash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-purple-600 hover:text-orange-500 transition-colors"
+                      >
+                        {transfer.transaction_hash.slice(0, 6)}...{transfer.transaction_hash.slice(-4)}
                       </a>
                     </td>
                   </tr>
@@ -461,29 +417,51 @@ const TokenDetail = () => {
         </div>
       </div>
 
-      {/* Purchase Confirmation Modal */}
+      {/* Purchase Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-xl p-6 shadow-2xl border border-gray-700 max-w-md w-full" data-aos="zoom-in">
-            <h4 className="text-xl font-bold text-purple-400 mb-4">Confirm Purchase</h4>
-            <p className="text-gray-300 mb-6">Cost of {purchaseAmount} tokens: <span className="font-bold">{cost} ETH</span></p>
-            <div className="flex gap-4">
-              <button 
+          <div className="bg-white rounded-3xl p-8 shadow-2xl border-4 border-purple-500 max-w-md w-full animate-pop-in">
+            <h4 className="text-3xl font-bold text-orange-500 mb-6">Confirm Launch 🚀</h4>
+            <div className="text-center mb-8">
+              <p className="text-2xl font-bold text-purple-600">
+                {purchaseAmount} Tokens
+              </p>
+              <p className="text-4xl font-black text-orange-500 my-4">
+                {cost} ETH
+              </p>
+              <p className="text-sm text-gray-600">This transaction will be recorded on-chain forever! 🌐</p>
+            </div>
+            <div className="grid gap-4">
+              <button
                 onClick={handlePurchase}
-                className="flex-1 py-2 rounded-lg font-semibold bg-purple-600 hover:bg-purple-700 transition-all duration-300"
+                className="py-4 bg-gradient-to-r from-purple-600 to-orange-500 text-white rounded-2xl font-bold text-xl hover:scale-105 transition-transform"
               >
-                Confirm
+                Confirm Purchase 🚀
               </button>
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
-                className="flex-1 py-2 rounded-lg font-semibold bg-gray-700 hover:bg-gray-600 transition-all duration-300"
+                className="py-4 bg-gray-100 text-purple-600 rounded-2xl font-bold text-xl hover:bg-gray-200 transition-colors"
               >
-                Cancel
+                Cancel Mission
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Footer */}
+      <Footer/>
+
+      <style jsx>{`
+        @keyframes pop-in {
+          0% { transform: scale(0.5); opacity: 0; }
+          80% { transform: scale(1.1); }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop-in {
+          animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+      `}</style>
     </div>
   );
 };

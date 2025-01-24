@@ -71,15 +71,15 @@ Sepolia.fun is an advanced Web3 template for creating and deploying meme token s
 ## Screenshots
 <table>
   <tr>
-    <td><img src="https://github.com/user-attachments/assets/f6a81597-f104-4837-91ad-bee6d7c5dc42" alt="Screenshot 4" width="400"></td>
-    <td><img src="https://github.com/user-attachments/assets/50c0dc78-6243-4bd7-8f2e-f93a8b0011e2" alt="Screenshot 1" width="400"></td>
-    <td><img src="https://github.com/user-attachments/assets/e992e688-8599-4991-8c9b-99a69c57c22b" alt="Screenshot 2" width="400"></td>
+    <td><img src="https://github.com/0xmetaschool/Sepolia.fun/blob/main/public/Sepolia.fun-web3-template-Landing-Page.png" alt="Screenshot 4" width="400"></td>
+    <td><img src="https://github.com/0xmetaschool/Sepolia.fun/blob/main/public/Sepolia.fun-web3-template-Landing-features.png" alt="Screenshot 1" width="400"></td>
+    <td><img src="https://github.com/0xmetaschool/Sepolia.fun/blob/main/public/Sepolia.fun-web3-template-Explorer.png" alt="Screenshot 2" width="400"></td>
   </tr>
 
 <tr>
-    <td><img src="https://github.com/user-attachments/assets/d4e957c9-5689-4a50-b027-a88c1ef851ed" alt="Screenshot 4" width="400"></td>
-    <td><img src="https://github.com/user-attachments/assets/d11bbca2-d660-40c9-9079-edcabb40d8a1" alt="Screenshot 1" width="400"></td>
-    <td><img src="https://github.com/user-attachments/assets/7567b921-1f46-44f8-9703-c0c4c150d413" alt="Screenshot 2" width="400"></td>
+    <td><img src="https://github.com/0xmetaschool/Sepolia.fun/blob/main/public/Sepolia.fun-web3-template-Create-Meme-coin.png" alt="Screenshot 4" width="400"></td>
+    <td><img src="https://github.com/0xmetaschool/Sepolia.fun/blob/main/public/Sepolia.fun-web3-template-Coin-Info.png" alt="Screenshot 1" width="400"></td>
+    <td><img src="https://github.com/0xmetaschool/Sepolia.fun/blob/main/public/Sepolia.fun-web3-template-Coin-Info1.png" alt="Screenshot 2" width="400"></td>
   </tr>
 </table>
 
