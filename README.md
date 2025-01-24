@@ -2,6 +2,8 @@
 
 Sepolia.fun is an advanced Web3 template for creating and deploying meme token systems. It utilizes bonding curve mechanics for price discovery and integrates automated Uniswap liquidity, enabling developers to establish sustainable token ecosystems with ease.
 
+Built with React.js and connected to Uniswap trading pools, this ready-to-use template helps developers launch their own token projects with automatic pricing and trading features that keep the market healthy.
+
 ## Live Demo
 
 
