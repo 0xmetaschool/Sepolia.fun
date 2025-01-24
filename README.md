@@ -78,8 +78,8 @@ Sepolia.fun is an advanced Web3 template for creating and deploying meme token s
 
 <tr>
     <td><img src="https://github.com/0xmetaschool/Sepolia.fun/blob/main/public/Sepolia.fun-web3-template-Create-Meme-coin.png" alt="Screenshot 4" width="400"></td>
-    <td><img src="https://github.com/0xmetaschool/Sepolia.fun/blob/main/public/Sepolia.fun-web3-template-Coin-Info.png" alt="Screenshot 1" width="400"></td>
-    <td><img src="https://github.com/0xmetaschool/Sepolia.fun/blob/main/public/Sepolia.fun-web3-template-Coin-Info1.png" alt="Screenshot 2" width="400"></td>
+    <td><img src="https://github.com/0xmetaschool/Sepolia.fun/blob/main/public/Sepolia.fun-web3-template-Coin-info.png" alt="Screenshot 1" width="400"></td>
+    <td><img src="https://github.com/0xmetaschool/Sepolia.fun/blob/main/public/Sepolia.fun-web3-template-Coin-info1.png" alt="Screenshot 2" width="400"></td>
   </tr>
 </table>
 
